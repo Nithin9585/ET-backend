@@ -1,5 +1,5 @@
-# Minimal Dockerfile for Railway deployment
-FROM python:3.11-slim
+# Minimal Dockerfile for Railway deployment - using stable base image
+FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
