@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better layer caching
-COPY requirements.txt .
+COPY requirements-py310.txt .
 
-# Install all dependencies from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt \
+# Install all dependencies from Python 3.10 compatible requirements
+RUN pip install --no-cache-dir -r requirements-py310.txt \
     && python -m spacy download en_core_web_sm --quiet \
     && pip cache purge
 
