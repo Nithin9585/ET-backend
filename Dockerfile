@@ -4,12 +4,24 @@ FROM python:3.10-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies for OpenCV and computer vision
 RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     curl \
+    wget \
     libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
     libgomp1 \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    libegl1-mesa-dev \
+    libgles2-mesa-dev \
+    libxrandr2 \
+    libxinerama1 \
+    libxcursor1 \
+    libxi6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,6 +47,10 @@ ENV DEBUG=false
 ENV OCR_GPU_ENABLED=false
 ENV LOG_LEVEL=INFO
 ENV MAX_FILE_SIZE=10485760
+# OpenCV headless mode
+ENV OPENCV_IO_ENABLE_OPENEXR=0
+ENV OPENCV_IO_ENABLE_JASPER=0
+ENV QT_QPA_PLATFORM=offscreen
 
 # Create logs directory
 RUN mkdir -p logs
