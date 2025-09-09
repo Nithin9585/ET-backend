@@ -1,0 +1,64 @@
+# Exclude unnecessary files from Docker build context
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.git/
+.gitignore
+.vscode/
+.idea/
+*.md
+*.txt
+!requirements.txt
+
+# Development files
+venv/
+env/
+.env
+.env.local
+node_modules/
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Logs and temporary files
+logs/
+*.log
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Documentation
+README.md
+ALTERNATIVE_DEPLOYMENT.md
+WINDOWS_SETUP.md
+
+# Deployment files
+docker-compose.yml
+deploy.sh
+deploy.bat
+Procfile.heroku
+railway.json
+
+# Output and data files
+output.txt
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.gif
