@@ -4,27 +4,24 @@ FROM python:3.10-slim
 # Set working directory
 WORKDIR /app
 
-# Install only essential system dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     curl \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install full dependencies for Render deployment
-RUN pip install --no-cache-dir \
-    fastapi==0.104.1 \
-    "uvicorn[standard]==0.24.0" \
-    python-multipart==0.0.6 \
-    python-dotenv==1.0.0 \
-    pydantic-settings==2.0.3 \
-    pdf2image==1.17.0 \
-    pillow==10.1.0 \
-    numpy==1.24.3 \
-    opencv-python-headless==4.8.1.78 \
-    easyocr==1.7.0 \
-    presidio-analyzer==2.2.33 \
-    spacy==3.7.2 \
+# Copy requirements first for better layer caching
+COPY requirements.txt .
+
+# Install all dependencies from requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
     && python -m spacy download en_core_web_sm --quiet \
     && pip cache purge
 
