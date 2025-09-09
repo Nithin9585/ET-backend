@@ -29,7 +29,14 @@ COPY ocr/ ./ocr/
 COPY pii_detection/ ./pii_detection/
 COPY config/ ./config/
 COPY start_server.py .
-COPY .env.production .env
+
+# Create production environment file
+RUN echo "ENVIRONMENT=production" > .env && \
+    echo "DEBUG=false" >> .env && \
+    echo "OCR_GPU_ENABLED=false" >> .env && \
+    echo "LOG_LEVEL=INFO" >> .env && \
+    echo "MAX_FILE_SIZE=10485760" >> .env && \
+    echo "ALLOWED_EXTENSIONS=jpg,jpeg,png,pdf,tiff,bmp" >> .env
 
 # Create necessary directories and set permissions
 RUN mkdir -p logs models \
