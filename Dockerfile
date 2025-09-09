@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install minimal dependencies directly
+# Install full dependencies for Render deployment
 RUN pip install --no-cache-dir \
     fastapi==0.104.1 \
     "uvicorn[standard]==0.24.0" \
