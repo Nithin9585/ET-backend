@@ -1,0 +1,20 @@
+# Ultra-minimal requirements for Railway
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+pydantic-settings==2.0.3
+pdf2image==1.17.0
+pillow==10.1.0
+numpy==1.24.3
+opencv-python-headless==4.8.1.78
+
+# OCR - using lighter alternatives
+easyocr==1.7.0
+
+# PII Detection - minimal setup
+presidio-analyzer==2.2.33
+spacy==3.7.2
+
+# Remove heavy dependencies that cause timeouts
+# torch, transformers, etc. will be installed only if needed
