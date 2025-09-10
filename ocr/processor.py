@@ -20,6 +20,7 @@ def process_document(file_path, languages=None):
     # Limit number of pages/images processed (configurable)
     PAGE_LIMIT = 20  # Change as needed
 
+    import traceback
     try:
         if not os.path.exists(file_path):
             return {"error": f"File not found: {file_path}"}
@@ -59,14 +60,13 @@ def process_document(file_path, languages=None):
                                 except (IndexError, ValueError, TypeError):
                                     continue
                     all_results["pages"].append(page_data)
-                    # Explicitly delete large objects and collect garbage
                     del page_results, pil_image, page_data
                     gc.collect()
-                except Exception:
+                except Exception as e:
                     if os.path.exists(temp_img_path):
                         os.unlink(temp_img_path)
                     gc.collect()
-                    return {"error": f"EasyOCR failed for PDF page {i + 1}"}
+                    return {"error": f"EasyOCR failed for PDF page {i + 1}: {str(e)}\n{traceback.format_exc()}"}
                 finally:
                     if os.path.exists(temp_img_path):
                         os.unlink(temp_img_path)
@@ -86,14 +86,14 @@ def process_document(file_path, languages=None):
                         results = reader.readtext(img_rgb, detail=1)
                         del img, img_rgb
                         gc.collect()
-                    except Exception:
+                    except Exception as e:
                         gc.collect()
-                        return {"error": "Image preprocessing failed"}
+                        return {"error": f"Image preprocessing failed: {str(e)}\n{traceback.format_exc()}"}
                 else:
                     raise img_shape_error
-            except Exception:
+            except Exception as e:
                 gc.collect()
-                return {"error": "EasyOCR readtext failed"}
+                return {"error": f"EasyOCR readtext failed: {str(e)}\n{traceback.format_exc()}"}
 
             if not results:
                 gc.collect()
@@ -124,9 +124,9 @@ def process_document(file_path, languages=None):
             del results, page_data
             gc.collect()
 
-    except Exception:
+    except Exception as e:
         gc.collect()
-        return {"error": "EasyOCR failed"}
+        return {"error": f"EasyOCR failed: {str(e)}\n{traceback.format_exc()}"}
 
     gc.collect()
     return all_results
