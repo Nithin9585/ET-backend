@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # Server Configuration
     debug: bool = Field(default=False, env="DEBUG")
     host: str = Field(default="0.0.0.0", env="HOST")
-    port: int = Field(default=8000, env="PORT")
+    port: int = Field(default=int(os.environ.get("PORT", "8000")), env="PORT")
     workers: int = Field(default=4, env="WORKERS")
     
     # API Configuration
