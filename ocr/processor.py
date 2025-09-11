@@ -5,6 +5,7 @@ from pdf2image import convert_from_path
 
 # Initialize EasyOCR reader cache
 readers = {}
+from performance_cache import ModelCache
 
 def process_document(file_path, languages=None):
     import gc
@@ -12,9 +13,7 @@ def process_document(file_path, languages=None):
     if not languages:
         languages = ['en']
     lang_key = tuple(languages)
-    if lang_key not in readers:
-        readers[lang_key] = easyocr.Reader(languages, gpu=True)
-    reader = readers[lang_key]
+    reader = ModelCache.easyocr_reader
     all_results = {"pages": []}
 
     # Limit number of pages/images processed (configurable)

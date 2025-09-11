@@ -1,11 +1,11 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, status
+from fastapi import FastAPI, File, UploadFile, HTTPException, status, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import tempfile
 import os
 import logging
-from ultralytics import YOLO
+from performance_cache import ModelCache
 from ocr.processor import process_document
 from pii_detection.detector import PIIDetector
 from pii_detection.models import TextSpan, EntityType, DetectedEntity
@@ -84,7 +84,10 @@ def validate_file(file: UploadFile) -> None:
 
 
 @app.post("/process_document")
-async def process_document_api(file: UploadFile = File(...)):
+async def process_document_api(
+    file: UploadFile = File(...),
+    use_llm: bool = Form(False)
+):
     """Process document for OCR, signature detection, and PII detection."""
     
     # Validate input file
@@ -92,7 +95,7 @@ async def process_document_api(file: UploadFile = File(...)):
     
     logger.info(f"Processing document: {file.filename}")
     
-    llm_api_key = settings.gemini_api_key
+    llm_api_key = settings.gemini_api_key if use_llm else None
     image_path = None
 
     try:
@@ -117,10 +120,9 @@ async def process_document_api(file: UploadFile = File(...)):
             return JSONResponse(content={"error": error_msg}, status_code=400)
 
         # Run YOLO signature detection
-        MODEL_PATH = os.path.join(os.getcwd(), "models", "detector_yolo_1cls.pt")
         signature_spans = []
         try:
-            model = YOLO(MODEL_PATH)
+            model = ModelCache.yolo_model
             results = model(image_path)
             unique_boxes = set()
             detected_boxes = 0

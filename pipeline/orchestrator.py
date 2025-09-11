@@ -39,7 +39,9 @@ async def run_pipeline(image_path, llm_api_key=None):
 	pages = ocr_to_textspans(ocr_result)
 
 	# Run YOLO signature detection
-	MODEL_PATH = "models/detector_yolo_1cls.pt"
+	BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+	MODEL_PATH = os.path.join(BASE_DIR, "models", "detector_yolo_1cls.pt")
+
 	signature_spans = []
 	try:
 		model = YOLO(MODEL_PATH)

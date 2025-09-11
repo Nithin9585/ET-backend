@@ -19,7 +19,6 @@ class LLMValidator:
             context = self._build_context(entity, context_text)
             validation_result = await self._validate_with_llm(entity, context)
             entity.validations["llm_contextual_score"] = validation_result["confidence"]
-            entity.validations["llm_reasoning"] = validation_result["reasoning"]
             corrected_type = validation_result.get("corrected_type")
             corrected_value = validation_result.get("corrected_value")
             if corrected_type and corrected_type != entity.type:
@@ -34,8 +33,8 @@ class LLMValidator:
                     entity.redacted_value = corrected_value
             entity.confidence = (entity.confidence + validation_result["confidence"]) / 2
             entity.method = "hybrid" if entity.method in ["rule", "ner"] else "llm"
-            if validation_result["confidence"] < 0.3 or "misclassified" in validation_result["reasoning"].lower() or "false positive" in validation_result["reasoning"].lower():
-                false_positives.append({"type": str(entity.type), "reason": validation_result["reasoning"]})
+            if validation_result["confidence"] < 0.3:
+                false_positives.append({"type": str(entity.type), "reason": "Low confidence"})
             else:
                 validated_entities.append(entity)
         return validated_entities, false_positives
@@ -49,12 +48,7 @@ class LLMValidator:
             "Analyze if the detected entity is correctly identified and, if needed, suggest corrections.\n\n"
             f"Context: {context}\n"
             f"Detected Entity: {entity.value} (type: {entity.type})\n\n"
-            "Consider:\n"
-            f"1. Is this actually a {entity.type}?\n"
-            "2. Does the surrounding context support this identification?\n"
-            "3. Could this be a false positive?\n"
-            "4. If the entity type or value should be corrected (e.g., 'date' should be 'date of birth'), provide the corrected type and value.\n\n"
-            "Respond ONLY with minified JSON object with keys: confidence (0..1), reasoning, corrected_type (optional), corrected_value (optional)."
+            "Respond ONLY with minified JSON object with keys: confidence (0..1), corrected_type (optional), corrected_value (optional). Do NOT include reasoning."
         )
         try:
             with anyio.move_on_after(20) as cancel_scope:
@@ -69,11 +63,11 @@ class LLMValidator:
                 result = json.loads(clean)
             except Exception:
                 match = re.search(r"{.*}", clean)
-                result = json.loads(match.group(0)) if match else {"confidence": 0.0, "reasoning": "Could not parse LLM response."}
+                result = json.loads(match.group(0)) if match else {"confidence": 0.0}
             if "confidence" not in result:
                 result["confidence"] = 0.0
-            if "reasoning" not in result:
-                result["reasoning"] = "No reasoning provided."
+            if "reasoning" in result:
+                del result["reasoning"]
             return result
         except Exception as e:
-            return {"confidence": 0.0, "reasoning": str(e)}
+            return {"confidence": 0.0}
