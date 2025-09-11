@@ -26,10 +26,11 @@ app = FastAPI(
     debug=settings.debug
 )
 
-# Add CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
+# Add CORS middleware for all origins, methods, and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
