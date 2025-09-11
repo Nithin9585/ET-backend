@@ -117,22 +117,22 @@ async def process_document_api(file: UploadFile = File(...)):
             return JSONResponse(content={"error": error_msg}, status_code=400)
 
         # Run YOLO signature detection
-        MODEL_PATH = "models/detector_yolo_1cls.pt"
+        MODEL_PATH = os.path.join(os.getcwd(), "models", "detector_yolo_1cls.pt")
         signature_spans = []
         try:
             model = YOLO(MODEL_PATH)
             results = model(image_path)
             unique_boxes = set()
+            detected_boxes = 0
             for i, r in enumerate(results):
                 for box in r.boxes:
                     coords = box.xyxy[0].tolist()
-                    print(f"[DEBUG] YOLO box coordinates: {coords}")
+                    conf = float(box.conf[0])
                     if len(coords) >= 4:
                         x1, y1, x2, y2 = coords[:4]
                     else:
-                        print(f"[WARNING] Skipping YOLO box with insufficient coordinates: {coords}")
+                        print(f"[SIGNATURE] Skipping YOLO box with insufficient coordinates: {coords}")
                         continue
-                    conf = float(box.conf[0])
                     box_key = (round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2))
                     if box_key in unique_boxes:
                         continue
@@ -150,8 +150,11 @@ async def process_document_api(file: UploadFile = File(...)):
                         "language": "und",
                         "ocr_confidence": conf
                     })
+                    detected_boxes += 1
+                    print(f"[SIGNATURE] Detected box {detected_boxes}: coords={coords}, confidence={conf}")
+            print(f"[SIGNATURE] Total detected signature boxes: {detected_boxes}")
         except Exception as e:
-            print(f"Error in signature detection: {e}")
+            print(f"[SIGNATURE][ERROR] Signature detection failed: {e}")
             signature_spans = []
 
         # Build spans for PII detection
@@ -199,12 +202,18 @@ async def process_document_api(file: UploadFile = File(...)):
 
         # Optionally run LLM validation
         false_positives = []
+        import logging
         if llm_api_key:
-            llm_validator = LLMValidator(api_key=llm_api_key)
-            validated_entities, false_positives = await llm_validator.validate_entities(
-                pii_entities, " ".join([s.text for s in spans_for_pii]), detector
-            )
+            try:
+                llm_validator = LLMValidator(api_key=llm_api_key)
+                validated_entities, false_positives = await llm_validator.validate_entities(
+                    pii_entities, " ".join([s.text for s in spans_for_pii]), detector
+                )
+            except Exception as llm_error:
+                logging.error(f"LLM validation failed: {llm_error}")
+                validated_entities = pii_entities
         else:
+            logging.warning("LLM validation skipped: GEMINI_API_KEY not set.")
             validated_entities = pii_entities
 
         # Convert DetectedEntity objects to dicts for JSON response

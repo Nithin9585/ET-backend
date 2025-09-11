@@ -14,20 +14,15 @@ class PIIDetector:
 		try:
 			# Initialize spaCy
 			self.nlp = spacy.load("en_core_web_sm")
-			print("[INFO] spaCy model loaded successfully")
 			# Initialize Presidio with custom recognizers
 			self.analyzer = AnalyzerEngine()
-			print("[INFO] Presidio AnalyzerEngine initialized successfully")
 			self.anonymizer = AnonymizerEngine()
 			# Add custom Indian recognizers
 			self.analyzer.registry.add_recognizer(AadhaarRecognizer())
 			self.analyzer.registry.add_recognizer(PANRecognizer())
 			self.analyzer.registry.add_recognizer(IndianPhoneRecognizer())
 			self.is_available = True
-			print("[INFO] PII Detector initialized successfully")
 		except (OSError, IOError, SystemExit, Exception) as e:
-			print(f"[WARNING] PII Detector initialization failed: {e}")
-			print("[WARNING] PII detection will be disabled")
 			self.nlp = None
 			self.analyzer = None
 			self.anonymizer = None
@@ -36,7 +31,6 @@ class PIIDetector:
 	def detect_entities(self, spans: List[TextSpan], entities_to_detect: List[str]) -> List[DetectedEntity]:
 		"""Detect PII entities from text spans."""
 		if not self.is_available:
-			print("[WARNING] PII detection is not available, returning empty results")
 			return []
 		
 		detected_entities = []
@@ -151,7 +145,7 @@ class PIIDetector:
 			"ORG": "ADDRESS",
 			"GPE": "ADDRESS",
 			"LOC": "ADDRESS",
-			"DATE": "DATE_OF_BIRTH",
+			"DATE": "DATE",
 			"CARDINAL": "MEDICAL_RECORD_NUMBER",
 			"QUANTITY": "MEDICAL_RECORD_NUMBER",
 			# Add more mappings as needed

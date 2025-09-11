@@ -35,11 +35,16 @@ RUN pip install --no-cache-dir -r requirements.txt \
     && python -m spacy download en_core_web_sm --quiet \
     && pip cache purge
 
+
 # Copy application files
 COPY api/ ./api/
 COPY ocr/ ./ocr/
 COPY pii_detection/ ./pii_detection/
 COPY config/ ./config/
+COPY models/ ./models/
+
+# Download spaCy large model for PII detection
+RUN python -m spacy download en_core_web_lg
 
 # Set environment variables
 ENV PYTHONPATH=/app

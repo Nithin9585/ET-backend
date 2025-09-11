@@ -39,7 +39,7 @@ async def run_pipeline(image_path, llm_api_key=None):
 	pages = ocr_to_textspans(ocr_result)
 
 	# Run YOLO signature detection
-	MODEL_PATH = "detector_yolo_1cls.pt"
+	MODEL_PATH = "models/detector_yolo_1cls.pt"
 	signature_spans = []
 	try:
 		model = YOLO(MODEL_PATH)
@@ -47,7 +47,12 @@ async def run_pipeline(image_path, llm_api_key=None):
 		unique_boxes = set()
 		for i, r in enumerate(results):
 			for box in r.boxes:
-				x1, y1, x2, y2 = box.xyxy[0].tolist()
+				coords = box.xyxy[0].tolist()
+				if len(coords) >= 4:
+					x1, y1, x2, y2 = coords[:4]
+				else:
+					print(f"[WARNING] Skipping YOLO box with insufficient coordinates: {coords}")
+					continue
 				conf = float(box.conf[0])
 				box_key = (round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2))
 				if box_key in unique_boxes:
@@ -66,7 +71,8 @@ async def run_pipeline(image_path, llm_api_key=None):
 		if pages and signature_spans:
 			pages[0].spans.extend(signature_spans)
 	except Exception as e:
-		print(f"Signature detection failed: {e}")
+		print(f"[ERROR] Signature detection failed: {e}")
+		signature_spans = []
 
 	# Entities to detect
 	entities_to_detect = [e.value for e in EntityType]
