@@ -1,17 +1,20 @@
+
 import psutil
 import gc
 import easyocr
 import os
 import tempfile
 from pdf2image import convert_from_path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Initialize EasyOCR reader cache
 readers = {}
 
-# Configurable limits
-MAX_FILE_SIZE_MB = 10  # Reject files larger than 10MB
-PAGE_LIMIT = 20        # Max pages to process
-MAX_MEMORY_MB = 400    # Abort if memory usage exceeds 400MB
+# Configurable limits from environment
+MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE", 10485760)) // (1024 * 1024)  # Convert bytes to MB
+PAGE_LIMIT = int(os.getenv("PAGE_LIMIT", 20))
+MAX_MEMORY_MB = int(os.getenv("MAX_MEMORY_MB", 400))
 
 # Helper to check memory usage
 def memory_ok():

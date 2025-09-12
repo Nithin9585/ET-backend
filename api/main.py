@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, status, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from performance_cache import ModelCache
 import tempfile
 import os
 import logging
@@ -41,6 +42,15 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=["*"]  # Configure properly for production
 )
+
+
+
+@app.on_event("startup")
+async def startup_event():
+    ModelCache.load_yolo()
+    ModelCache.load_easyocr()
+    ModelCache.load_spacy()
+    ModelCache.load_presidio()
 
 @app.get("/health")
 async def health_check():

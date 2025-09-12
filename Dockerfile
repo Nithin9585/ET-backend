@@ -38,10 +38,11 @@ RUN pip install --no-cache-dir -r requirements.txt \
 
 # Copy application files
 COPY api/ ./api/
+COPY performance_cache.py ./performance_cache.py
 COPY ocr/ ./ocr/
 COPY pii_detection/ ./pii_detection/
 COPY config/ ./config/
-COPY models/ ./models/
+COPY detector_yolo_1cls.pt ./detector_yolo_1cls.pt
 
 # Download spaCy large model for PII detection
 RUN python -m spacy download en_core_web_lg
