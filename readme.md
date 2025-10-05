@@ -2,6 +2,12 @@
 
 A production-ready FastAPI backend service for OCR processing, signature detection, PII identification, and image recognition with AI-powered validation.
 
+
+
+https://github.com/user-attachments/assets/470d9c8a-50f3-401c-b9bd-7127d91a12e5
+
+
+
 ## 🎯 Features
 
 - 📄 **OCR Processing** - Extract text from documents and PDFs using EasyOCR
